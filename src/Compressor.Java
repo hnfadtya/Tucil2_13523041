@@ -1,3 +1,6 @@
+import java.io.*;
+import java.util.*;
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 public class Compressor {
@@ -9,8 +12,9 @@ public class Compressor {
     private final String outputPath;
 
     private BufferedImage inputImage;
-    private QuadTreeNode root;
+    private QuadtreeNode root;
 
+    // Constructor
     public Compressor(String inputPath, int errorMethod, double threshold, int minBlockSize, double targetCompression, String outputPath) {
         this.inputPath = inputPath;
         this.errorMethod = errorMethod;
@@ -20,47 +24,67 @@ public class Compressor {
         this.outputPath = outputPath;
     }
 
-    public void run() {
-        long start = System.currentTimeMillis();
-
+    // Main processing method
+    public void compressImage() {
         try {
-            inputImage = ImageUtils.loadImage(inputPath);
-            root = buildQuadtree(0, 0, inputImage.getWidth(), inputImage.getHeight());
-
+            long start = System.currentTimeMillis();
+            // load and compress image
+            inputImage = loadImage(inputPath);
             BufferedImage outputImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), BufferedImage.TYPE_INT_RGB);
-            drawQuadtree(outputImage, root);
+            root = QuadtreeNode(0, 0, inputImage.getWidth(), inputImage.getHeight());
+            splitQuadtree(inputImage, root);
 
-            ImageUtils.saveImage(outputImage, outputPath);
+            // reconstruct (actually compress and reconstructing image could be done simultaneously)
+            reconstructImage(outputImage, root);            
+            saveCompressedImage(outputImage, outputPath);
 
             long end = System.currentTimeMillis();
             System.out.println("Execution Time: " + (end - start) + "ms");
-            // Nanti tambahkan info ukuran, kedalaman pohon, node, dll
+            // System.out.println("Image size before compressed: " +  + "satuan ukuran");
+            // System.out.println("Image size after compressed: " +  + "satuan ukuran");
+            // System.out.println("Compression percentage: " +  + "%");
+            // System.out.println("Tree depth: " +  + "satuan depth");
+            // System.out.println("Tree nodes: " +  + "nodes");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private QuadTreeNode buildQuadtree(int x, int y, int width, int height) {
-        // placeholder untuk pengecekan error dan rekursi
-        QuadTreeNode node = new QuadTreeNode(x, y, width, height);
-        // TODO: panggil metode error dan lakukan pembagian blok
-        return node;
+    // Recursion for normalize block
+    private void splitQuadtree(BufferedImage image, QuadtreeNode node) {
+        int nodeSize = node.width * node.height;
+        int childrenNodeSize = nodeSize / 4;
+        QuadtreeNode.getRGB();
+        double variance = ErrorCalculator.calculateError(errorMethod, image, node, nodeSize); // error
+
+        if (nodeSize <= minBlockSize || childrenNodeSize >= minBlockSize || variance < threshold) {
+            node.isLeaf = true;
+            return;
+        }
+
+        for (QuadtreeNode child : node.children) {
+            splitQuadtree(image, child);
+        }
     }
 
-    private void drawQuadtree(BufferedImage image, QuadTreeNode node) {
+    // Recursion for reconstruct the image
+    private void reconstructImage(BufferedImage image, QuadtreeNode node) {
         if (node == null) return;
 
         if (node.isLeaf) {
-            for (int i = node.x; i < node.x + node.width; i++) {
-                for (int j = node.y; j < node.y + node.height; j++) {
-                    int rgb = (node.averageR << 16) | (node.averageG << 8) | node.averageB;
-                    image.setRGB(i, j, rgb);
-                }
-            }
+            QuadtreeNode.normalizeColor(image, node);
         } else {
-            for (QuadTreeNode child : node.children) {
-                drawQuadtree(image, child);
+            for (QuadtreeNode child : node.children) {
+                reconstructImage(image, child);
             }
         }
+    }
+
+    public BufferedImage loadImage(String path) throws IOException {
+        return ImageIO.read(new File(path));
+    }
+    
+    public void saveCompressedImage(BufferedImage image, String path) throws IOException {
+        ImageIO.write(image, "png", new File(path));
     }
 }

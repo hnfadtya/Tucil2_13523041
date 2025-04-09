@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
@@ -7,24 +6,30 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        while (true && (scanner.nextLine()).equals("Exit")) {
+        while (true) {
             printHeader();
 
-            System.out.println("[1] Variance");
-            System.out.println("[2] Mean Absolute Deviation");
-            System.out.println("[3] Max Pixel Difference");
-            System.out.println("[4] Entropy");
-            System.out.println("Press (Exit) to quit from this program..");
-
-            System.out.print("Enter file input path (folder test/): ");
-            String filename = scanner.nextLine().trim();
+            // 1. Input at the begining
+            System.out.println("Enter the filename (i.e. image.png, image.jpg) from folder /test to compress image");
+            System.out.println("Enter (Exit) to quit from this program..");
+            String input = scanner.nextLine();
+            if ((input).equals("Exit")) {
+                break;
+            }
+            
+            // 2. Input filename for being compressed
+            String filename = input.trim();
             File inputPath = new File("test/" + filename);
-
             if (!inputPath.exists()) {
                 System.out.println("Error: File '" + filename + "' tidak ditemukan!\n");
                 continue;
             }
-
+            
+            // 3. Choosing Error Method
+            System.out.println("[1] Variance");
+            System.out.println("[2] Mean Absolute Deviation");
+            System.out.println("[3] Max Pixel Difference");
+            System.out.println("[4] Entropy");
             System.out.print("Enter error method based on list above (1-4): ");
             String method = scanner.nextLine();
             if (!input.equals("1") || !input.equals("2") || !input.equals("3") || !input.equals("4")) {
@@ -32,6 +37,7 @@ public class Main {
                 continue;
             }
 
+            // 4. Input required parameter
             System.out.print("Enter threshold: ");
             String threshold = scanner.nextLine();
 
@@ -44,21 +50,15 @@ public class Main {
             System.out.print("Enter file output path: ");
             String outputPath = scanner.nextLine();
 
-            System.out.println("\nMemuat file: " + filename);
-            long start = System.currentTimeMillis();
-
+            // 5. Compressing File
             Compressor compressor = new Compressor(inputPath, errorMethod, threshold, minBlockSize, targetCompression, outputPath);
-            compressor.run();
             try {
-                solver.loadFile(inputFile.getAbsolutePath());
+                compressor.compressImage();
+                System.out.println("\nSuccess compressing file: " + filename);
             } catch (IOException e) {
-                System.out.println("Gagal memuat file: " + e.getMessage());
+                System.out.println("Compressing file failed: " + e.getMessage());
                 continue;
             }
-
-            long end = System.currentTimeMillis();
-            // System.out.printf("Waktu pencarian: " + (end - start) + "ms\n\n");
-            // System.out.println("Banyak kasus yang ditinjau: " + solver.getCheckedCases());
         }
     }
 
