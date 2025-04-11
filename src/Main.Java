@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
@@ -10,18 +9,19 @@ public class Main {
             printHeader();
 
             // 1. Input at the begining
-            System.out.println("Enter the filename (i.e. image.png, image.jpg) from folder /test to compress image");
+            System.out.println("Enter the absolute path from image to compress..");
             System.out.println("Enter (Exit) to quit from this program..");
             String input = scanner.nextLine();
             if ((input).equals("Exit")) {
+                printFooter();
                 break;
             }
             
             // 2. Input filename for being compressed
-            String filename = input.trim();
-            File inputPath = new File("test/" + filename);
-            if (!inputPath.exists()) {
-                System.out.println("Error: File '" + filename + "' tidak ditemukan!\n");
+            String absolutePathInput = input;
+            File inputFile = new File(absolutePathInput);
+            if (!inputFile.exists() || !inputFile.isFile()) {
+                System.out.println("Error: Path '" + absolutePathInput + "' tidak ditemukan!\n");
                 continue;
             }
             
@@ -31,31 +31,36 @@ public class Main {
             System.out.println("[3] Max Pixel Difference");
             System.out.println("[4] Entropy");
             System.out.print("Enter error method based on list above (1-4): ");
-            String method = scanner.nextLine();
-            if (!input.equals("1") || !input.equals("2") || !input.equals("3") || !input.equals("4")) {
+            int errorMethod = scanner.nextInt();
+            if (errorMethod != 1 && errorMethod != 2 && errorMethod != 3 && errorMethod != 4) {
                 System.out.println("Pilihan tidak valid!\n");
                 continue;
             }
 
             // 4. Input required parameter
             System.out.print("Enter threshold: ");
-            String threshold = scanner.nextLine();
+            double threshold = scanner.nextDouble();
+            scanner.nextLine();
 
             System.out.print("Enter minimum block size: ");
-            String minBlockSize = scanner.nextLine();
+            int minBlockSize = scanner.nextInt();
+            scanner.nextLine();
 
             System.out.print("Enter target compression: ");
-            String targetCompression = scanner.nextLine();
+            double targetCompression = scanner.nextDouble();
+            scanner.nextLine();
 
             System.out.print("Enter file output path: ");
-            String outputPath = scanner.nextLine();
+            String absolutePathOutput = scanner.nextLine();
+            File outputFile = new File(absolutePathOutput);
+
 
             // 5. Compressing File
-            Compressor compressor = new Compressor(inputPath, errorMethod, threshold, minBlockSize, targetCompression, outputPath);
+            Compressor compressor = new Compressor(inputFile, errorMethod, threshold, minBlockSize, targetCompression, outputFile);
             try {
                 compressor.compressImage();
-                System.out.println("\nSuccess compressing file: " + filename);
-            } catch (IOException e) {
+                System.out.println("\nSuccess compressing file");
+            } catch (Exception e) {
                 System.out.println("Compressing file failed: " + e.getMessage());
                 continue;
             }
@@ -72,27 +77,5 @@ public class Main {
         System.out.println("\n======================================");
         System.out.println("        TERIMA KASIH TELAH COBA!      ");
         System.out.println("======================================");
-    }
-
-    private static void saveSolutionToFile(char[][] board, String inputFilename, int row, int col) {
-        String outputFilename = "test/output/" + inputFilename.replace(".txt", "_solution.txt");
-        File outputFile = new File(outputFilename);
-
-        try {
-            outputFile.getParentFile().mkdirs();
-            FileWriter writer = new FileWriter(outputFile);
-
-            for (int i = 0; i < row; i++) {
-                for (int j = 0; j < col; j++) {
-                    writer.write(board[i][j] + " ");
-                }
-                writer.write("\n");
-            }
-
-            writer.close();
-            System.out.println("Solusi disimpan ke: " + outputFilename);
-        } catch (IOException e) {
-            System.out.println("Gagal menyimpan solusi: " + e.getMessage());
-        }
     }
 }
