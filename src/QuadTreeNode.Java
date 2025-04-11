@@ -3,9 +3,9 @@ import java.awt.image.BufferedImage;
 
 public class QuadtreeNode {
     public int x, y, width, height;
-    public double averageR;
-    public double averageG;
-    public double averageB;
+    public int averageR;
+    public int averageG;
+    public int averageB;
     public Color averageColor;
     public boolean isLeaf;
     public QuadtreeNode[] children;
@@ -40,36 +40,27 @@ public class QuadtreeNode {
     public void normalizeColor(BufferedImage img) {        
         for (int i = this.x; i < this.x + this.width; i++) {
             for (int j = this.y; j < this.y + this.height; j++) {
-                img.setRGB(i, j, averageColor.getRGB());
+                img.setRGB(i, j, this.averageColor.getRGB());
             }
         }
-
-        System.out.println("X : " + this.x);
-        // System.out.println("Y : " + this.x);
-        // System.out.println("avgRGB : " + (int) this.averageRGB);
     }
 
     public void calculateAverageColor(BufferedImage img) {
-        long sumR = 0, sumG = 0, sumB = 0;
+        int sumR = 0, sumG = 0, sumB = 0;
         int pixelCount = width * height;
     
         for (int i = this.x; i < this.x + this.width; i++) {
             for (int j = this.y; j < this.y + this.height; j++) {
-                Color color = new Color(img.getRGB(i, j));
-                sumR += color.getRed();
-                sumG += color.getGreen();
-                sumB += color.getBlue();
+                int rgb = img.getRGB(x, y);
+                sumR += Utils.getRed(rgb);
+                sumG += Utils.getGreen(rgb);
+                sumB += Utils.getBlue(rgb);
             }
         }
     
-        this.averageR = sumR / (double) pixelCount;
-        this.averageG = sumG / (double) pixelCount;
-        this.averageB = sumB / (double) pixelCount;
-        this.averageColor = new Color((int)this.averageR, (int)this.averageG, (int)this.averageB);
-
-        // System.out.println("avgR : " + this.averageR);
-        // System.out.println("avgG : " + this.averageG);
-        // System.out.println("avgB : " + this.averageB);
-        // System.out.println("avgRGB : " + this.averageRGB);
+        this.averageR = sumR / pixelCount;
+        this.averageG = sumG / pixelCount;
+        this.averageB = sumB / pixelCount;
+        this.averageColor = new Color(this.averageR, this.averageG, this.averageB);
     }    
 }

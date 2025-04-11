@@ -3,54 +3,44 @@ import java.io.*;
 import javax.imageio.ImageIO;
 
 public class Compressor {
-    private final File inputPath;
+    private final File inputFile;
     private final int errorMethod;
     private final double threshold;
     private final int minBlockSize;
-    private final double targetCompression;
-    private final File outputPath;
+    private final File compressedFile;
 
     private BufferedImage inputImage;
     private QuadtreeNode root;
-    private int countNode = 1;
-    private int countNodeDump = 1;
-    private int checkpoint = 0;
 
     // Constructor
-    public Compressor(File inputPath, int errorMethod, double threshold, int minBlockSize, double targetCompression, File outputPath) {
-        this.inputPath = inputPath;
+    public Compressor(File inputFile, int errorMethod, double threshold, int minBlockSize, File compressedFile) {
+        this.inputFile = inputFile;
         this.errorMethod = errorMethod;
         this.threshold = threshold;
         this.minBlockSize = minBlockSize;
-        this.targetCompression = targetCompression;
-        this.outputPath = outputPath;
+        this.compressedFile = compressedFile;
     }
 
     // Main processing method
     public void compressImage() {
         try {
             long start = System.currentTimeMillis();
+            
             // load and compress image
-            inputImage = loadImage(inputPath);
-            BufferedImage outputImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+            inputImage = loadImage(inputFile);
+            BufferedImage compressedImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), BufferedImage.TYPE_INT_RGB);
             root = new QuadtreeNode(0, 0, inputImage.getWidth(), inputImage.getHeight());
             splitQuadtree(inputImage, root);
 
             // reconstruct (actually compress and reconstructing image could be done simultaneously)
-            reconstructImage(outputImage, root);            
-            saveCompressedImage(outputImage, outputPath);
-
+            reconstructImage(compressedImage, root);            
+            saveCompressedImage(compressedImage, compressedFile);
             long end = System.currentTimeMillis();
+
             System.out.println("Execution Time: " + (end - start) + "ms");
-            // System.out.println("Image size before compressed: " +  + "satuan ukuran");
-            // System.out.println("Image size after compressed: " +  + "satuan ukuran");
-            // System.out.println("Compression percentage: " +  + "%");
-            // System.out.println("Tree depth: " +  + "satuan depth");
-            System.out.println("Tree nodes: " + countNode + "nodes");
-            System.out.println("Tree nodes: " + countNodeDump + "nodes");
-            System.out.println("Checkpoint: " + checkpoint);
+            IO.printCompressionStats(inputFile, compressedFile, root);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error occur: " + e.getMessage());
         }
     }
 
@@ -59,20 +49,10 @@ public class Compressor {
         int nodeSize = node.width * node.height;
         int childrenNodeSize = nodeSize / 4;
         node.calculateAverageColor(image);
-        double variance = ErrorCalculator.calculateError(errorMethod, image, node, nodeSize); // error
-
-        System.out.println("avgR : " + node.averageR);
-        System.out.println("avgG : " + node.averageG);
-        System.out.println("avgB : " + node.averageB);
-        System.out.println("avgRGB : " + node.averageColor);
-        System.out.println("node size : " + nodeSize);
-        System.out.println("children size : " + childrenNodeSize);
-        System.out.println("this is error : " + variance);
+        double variance = ErrorCalculator.calculateError(errorMethod, image, node); // error
 
         if (nodeSize <= minBlockSize || childrenNodeSize < minBlockSize || variance <= threshold) {
             node.isLeaf = true;
-            checkpoint++;
-            System.out.println("checkpoint");
             return;
         }
 
@@ -80,7 +60,6 @@ public class Compressor {
         for (QuadtreeNode child : node.children) {
             splitQuadtree(image, child);
         }
-        countNode += 4;
     }
     
     // Recursion for reconstruct the image
@@ -93,7 +72,6 @@ public class Compressor {
             for (QuadtreeNode child : node.children) {
                 reconstructImage(image, child);
             }
-            countNodeDump += 4;
         }
     }
     
@@ -108,6 +86,15 @@ public class Compressor {
             parentDir.mkdirs();  // buat folder secara rekursif
         }
 
-        ImageIO.write(image, "jpg", file);
+        // Ekstrak ekstensi dari nama file
+        String fileName = file.getName();
+        String extension = "jpg"; // default
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex > 0 && dotIndex < fileName.length() - 1) {
+            extension = fileName.substring(dotIndex + 1).toLowerCase();
+        }
+
+        // Simpan gambar dengan format sesuai ekstensi
+        ImageIO.write(image, extension, file);
     }
 }

@@ -6,76 +6,41 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            printHeader();
+            IO.printHeader();
 
             // 1. Input at the begining
             System.out.println("Enter the absolute path from image to compress..");
-            System.out.println("Enter (Exit) to quit from this program..");
-            String input = scanner.nextLine();
-            if ((input).equals("Exit")) {
-                printFooter();
+            System.out.println("Enter 'Exit' to quit from this program..");
+            System.out.print(">>> ");
+            String input = scanner.nextLine().trim();
+
+            if ((input).equalsIgnoreCase("Exit")) {
+                IO.printFooter();
                 break;
             }
-            
-            // 2. Input filename for being compressed
-            String absolutePathInput = input;
-            File inputFile = new File(absolutePathInput);
+
+            // 2. Input required parameter
+            File inputFile = new File(input);
             if (!inputFile.exists() || !inputFile.isFile()) {
-                System.out.println("Error: Path '" + absolutePathInput + "' tidak ditemukan!\n");
-                continue;
-            }
-            
-            // 3. Choosing Error Method
-            System.out.println("[1] Variance");
-            System.out.println("[2] Mean Absolute Deviation");
-            System.out.println("[3] Max Pixel Difference");
-            System.out.println("[4] Entropy");
-            System.out.print("Enter error method based on list above (1-4): ");
-            int errorMethod = scanner.nextInt();
-            if (errorMethod != 1 && errorMethod != 2 && errorMethod != 3 && errorMethod != 4) {
-                System.out.println("Pilihan tidak valid!\n");
+                System.out.println("Error: Path '" + input + "' cannot be found!\n");
                 continue;
             }
 
-            // 4. Input required parameter
-            System.out.print("Enter threshold: ");
-            double threshold = scanner.nextDouble();
-            scanner.nextLine();
+            IO.showErrorMethodMenu();
+            int errorMethod = IO.getValidatedIntInput(scanner, "Enter method in (1-4): ", 1, 4);
+            double threshold = IO.getValidatedDoubleInput(scanner, "\nEnter threshold value: ");
+            int minBlockSize = IO.getValidatedIntInput(scanner, "Enter minimum block size: ", 1, Integer.MAX_VALUE);
+            File outputFile = IO.getValidatedOutputFile(scanner, "Enter file output path: ");
 
-            System.out.print("Enter minimum block size: ");
-            int minBlockSize = scanner.nextInt();
-            scanner.nextLine();
-
-            System.out.print("Enter target compression: ");
-            double targetCompression = scanner.nextDouble();
-            scanner.nextLine();
-
-            System.out.print("Enter file output path: ");
-            String absolutePathOutput = scanner.nextLine();
-            File outputFile = new File(absolutePathOutput);
-
-
-            // 5. Compressing File
-            Compressor compressor = new Compressor(inputFile, errorMethod, threshold, minBlockSize, targetCompression, outputFile);
+            // 3. Compressing File
+            Compressor compressor = new Compressor(inputFile, errorMethod, threshold, minBlockSize, outputFile);
             try {
                 compressor.compressImage();
                 System.out.println("\nSuccess compressing file");
             } catch (Exception e) {
                 System.out.println("Compressing file failed: " + e.getMessage());
-                continue;
             }
         }
-    }
-
-    private static void printHeader() {
-        System.out.println("======================================");
-        System.out.println("        IQ PUZZLER PRO SOLVER         ");
-        System.out.println("======================================");
-    }
-
-    private static void printFooter() {
-        System.out.println("\n======================================");
-        System.out.println("        TERIMA KASIH TELAH COBA!      ");
-        System.out.println("======================================");
+        scanner.close();
     }
 }
