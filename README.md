@@ -15,25 +15,14 @@ Proyek ini dibuat untuk memenuhi spesifikasi tugas besar mata kuliah Strategi Al
 
 ## Deskripsi Program
 
-+ Quadtree adalah struktur data hierarkis yang digunakan untuk membagi ruang atau data
-menjadi bagian yang lebih kecil, yang sering digunakan dalam pengolahan gambar. Dalam
-konteks kompresi gambar, Quadtree membagi gambar menjadi blok-blok kecil berdasarkan
-keseragaman warna atau intensitas piksel. Prosesnya dimulai dengan membagi gambar menjadi
-empat bagian, lalu memeriksa apakah setiap bagian memiliki nilai yang seragam berdasarkan
-analisis sistem warna RGB, yaitu dengan membandingkan komposisi nilai merah (R), hijau (G),
-dan biru (B) pada piksel-piksel di dalamnya. Jika bagian tersebut tidak seragam, maka bagian
-tersebut akan terus dibagi hingga mencapai tingkat keseragaman tertentu atau ukuran
-minimum yang ditentukan.
+Salah satu metode yang dapat digunakan untuk mengompresi gambar adalah dengan menggunakan algoritma Divide and Conquer. Karena gambar sering disimpan dalam bentuk kotak/persegi, algoritma tersebut akan membagi suatu gambar menjadi empat buah subpersoalan atau blok yang ukurannya sama besar. Tujuannya adalah membagi gambar menjadi kumpulan suatu blok yang memiliki warna serupa dan direpresentasikan dalam bentuk tree. Dalam penerapan hal tersebut digunakan sebuah threshold, dan ukuran blok minimum agar terdapat batas bagi algoritma untuk berhenti membagi gambar/blok lagi. Oleh karena itu, sebuah perhitungan error yang menghasilkan nilai tertentu diperlukan untuk membandingkannya dengan nilai threshold. Program ini adalah implementasi dari proses pengompresian gambar dengan empat metode :
++ Variansi
++ Mean Absolute Deviation 
++ Max Pixel Difference 
++ Entropy 
+ 
 
 ## How To Run
-Dari *root folder*, ketik `cd bin` untuk pindah ke folder bin. Kemudian ketik <br />
-`java main/Main` <br /> pada terminal untuk menjalankan program. <br /> <br />File yang digunakan sebagai *input* dan sebagai tempat menyimpan hasil *output* berada pada folder test
-
-atau 
-javac -d bin src/*.java
-mkdir bin 
-java -cp bin src.Main
-
-
-
-```
++ Buka terminal pada *root folder*
++ ketik <br />`javac -d bin src/*.java` <br /> 
++ ketik <br />`java -cp bin src.Main` <br /> 
